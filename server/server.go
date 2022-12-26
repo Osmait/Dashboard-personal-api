@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/osmait/admin-finanzas/database"
 	"github.com/osmait/admin-finanzas/repository"
+	"github.com/rs/cors"
 )
 
 type Config struct {
@@ -47,14 +48,16 @@ func NewServer(ctx context.Context, config *Config) (*Broke, error) {
 
 func (b *Broke) Strat(binder func(s Server, r *mux.Router)) {
 	b.router = mux.NewRouter()
+
 	binder(b, b.router)
+	handler := cors.AllowAll().Handler(b.router)
 	repo, err := database.NewPostgresRepository(b.config.DataBaseUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
 	repository.SetRepository(repo)
 	log.Println("Starting server on port", b.Config().Port)
-	if err := http.ListenAndServe(b.config.Port, b.router); err != nil {
+	if err := http.ListenAndServe(b.config.Port, handler); err != nil {
 		log.Fatal("ListenAndServer:", err)
 	}
 

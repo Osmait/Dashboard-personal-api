@@ -11,10 +11,15 @@ import (
 
 func UserRouters(s server.Server, r *mux.Router) {
 	r.Use(middleware.CheckAuthMiddleware(s))
+
 	// User
 	r.HandleFunc("/user", handlers.SignUpHandler(s)).Methods(http.MethodPost)
 	r.HandleFunc("/user/{id}", handlers.GetUserById(s)).Methods(http.MethodGet)
 	r.HandleFunc("/login", handlers.LoginHandler(s)).Methods(http.MethodPost)
+	r.HandleFunc("/user/confirmed/{token}", handlers.UserTokenAuth(s)).Methods(http.MethodGet)
+
+	// Perfil
+	r.HandleFunc("/perfil", handlers.Perfil(s)).Methods(http.MethodGet)
 
 	// Account
 	r.HandleFunc("/account", handlers.InsertAccount(s)).Methods(http.MethodPost)

@@ -23,7 +23,7 @@ func NewPostgresRepository(url string) (*PostgresRepository, error) {
 
 func (repo *PostgresRepository) InsertUser(ctx context.Context, user *models.User) error {
 
-	_, err := repo.db.ExecContext(ctx, "INSERT INTO users (id,name,last_name,email,password) VALUES ($1,$2,$3,$4,$5)", user.Id, user.Name, user.LastName, user.Email, user.Password)
+	_, err := repo.db.ExecContext(ctx, "INSERT INTO users (id,name,last_name,email,password,token) VALUES ($1,$2,$3,$4,$5,$6)", user.Id, user.Name, user.LastName, user.Email, user.Password, user.Token)
 	return err
 }
 
@@ -50,8 +50,36 @@ func (repo *PostgresRepository) GetUserById(ctx context.Context, id string) (*mo
 	return &user, nil
 }
 
+func (repo *PostgresRepository) GetUserByToken(ctx context.Context, token string) (*models.User, error) {
+	rows, err := repo.db.QueryContext(ctx, "SELECT id,token,confirmed FROM users WHERE token =$1", token)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		err = rows.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+	var user = models.User{}
+	for rows.Next() {
+		if err = rows.Scan(&user.Id, &user.Token, &user.Confirmed); err == nil {
+			return &user, nil
+		}
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (repo *PostgresRepository) UpdateConfirmed(ctx context.Context, user *models.User) error {
+	_, err := repo.db.ExecContext(ctx, "UPDATE users SET confirmed=$1,token =$2 WHERE id =$3", user.Confirmed, user.Token, user.Id)
+	return err
+}
+
 func (repo *PostgresRepository) GetUserEmail(ctx context.Context, email string) (*models.User, error) {
-	rows, err := repo.db.QueryContext(ctx, "SELECT id,name,last_name,email,password FROM users WHERE email =$1", email)
+	rows, err := repo.db.QueryContext(ctx, "SELECT id,name,last_name,email,password,token,confirmed FROM users WHERE email =$1", email)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +92,7 @@ func (repo *PostgresRepository) GetUserEmail(ctx context.Context, email string) 
 	}()
 	var user = models.User{}
 	for rows.Next() {
-		if err = rows.Scan(&user.Id, &user.Name, &user.LastName, &user.Email, &user.Password); err == nil {
+		if err = rows.Scan(&user.Id, &user.Name, &user.LastName, &user.Email, &user.Password, &user.Token, &user.Confirmed); err == nil {
 
 			return &user, nil
 		}

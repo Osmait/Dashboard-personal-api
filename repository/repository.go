@@ -11,6 +11,9 @@ type Repository interface {
 	InsertUser(ctx context.Context, user *models.User) error
 	GetUserById(ctx context.Context, id string) (*models.User, error)
 	GetUserEmail(ctx context.Context, email string) (*models.User, error)
+	GetUserByToken(ctx context.Context, token string) (*models.User, error)
+	UpdateConfirmed(ctx context.Context, user *models.User) error
+
 	// account
 	InsertAccount(ctx context.Context, account *models.Account) error
 	GetAcoounts(ctx context.Context, userId string) ([]*models.Account, error)
@@ -44,6 +47,12 @@ func GetUserById(ctx context.Context, id string) (*models.User, error) {
 }
 func GetUserEmail(ctx context.Context, email string) (*models.User, error) {
 	return implementation.GetUserEmail(ctx, email)
+}
+func GetUserByToken(ctx context.Context, token string) (*models.User, error) {
+	return implementation.GetUserByToken(ctx, token)
+}
+func UpdateConfirmed(ctx context.Context, user *models.User) error {
+	return implementation.UpdateConfirmed(ctx, user)
 }
 
 func Close() error {

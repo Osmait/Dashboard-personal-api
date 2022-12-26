@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -31,19 +30,27 @@ func SignUpHandler(s server.Server) http.HandlerFunc {
 			return
 		}
 		id, err := ksuid.NewRandom()
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
+		tokenAuth, err := ksuid.NewRandom()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		user.Id = id.String()
 		user.Password = string(hashedPassword)
+		user.Token = tokenAuth.String()
+
 		err = repository.InsertUser(r.Context(), &user)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		user.Password = ""
+		go helpers.SendMail(tokenAuth.String(), user.Email)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(user)
 	}
@@ -64,6 +71,34 @@ func GetUserById(s server.Server) http.HandlerFunc {
 	}
 }
 
+func UserTokenAuth(s server.Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		params := mux.Vars(r)
+		user, err := repository.GetUserByToken(r.Context(), params["token"])
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if user.Token == "" {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		user.Confirmed = true
+		user.Token = ""
+		err = repository.UpdateConfirmed(r.Context(), user)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(models.DeleteUPdateReponse{
+			Message: "User Confirmed",
+		})
+
+	}
+}
+
 func LoginHandler(s server.Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var request = models.SignUpLoginRequest{}
@@ -74,6 +109,7 @@ func LoginHandler(s server.Server) http.HandlerFunc {
 		}
 
 		user, err := repository.GetUserEmail(r.Context(), request.Email)
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -83,10 +119,14 @@ func LoginHandler(s server.Server) http.HandlerFunc {
 			http.Error(w, "invalid credentials", http.StatusUnauthorized)
 			return
 		}
+		if !user.Confirmed {
+			http.Error(w, "User No Autenticado", http.StatusUnauthorized)
+			return
+		}
 
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
 			http.Error(w, "invalid credentials", http.StatusUnauthorized)
-			fmt.Println(err)
+
 			return
 		}
 		token, err := helpers.SignToken(user.Id, s)
@@ -98,7 +138,28 @@ func LoginHandler(s server.Server) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(models.LoginResponse{
 			Token: token,
+			User:  user,
 		})
 
 	}
+}
+
+func Perfil(s server.Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token, err := helpers.DecodeJwt(w, r, s)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+		claims, ok := token.Claims.(*models.AppClaims)
+
+		if !ok || !token.Valid {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(claims)
+	}
+
 }
