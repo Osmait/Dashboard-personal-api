@@ -24,9 +24,15 @@ type Repository interface {
 	DeleteBill(ctx context.Context, id string) error
 
 	// Income
-	InsertIncome(ctx context.Context, income *models.Income) error
-	GetIncome(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Income, error)
+	InsertIncome(ctx context.Context, transaction *models.Transaction) error
+
+	GetIncome(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Transaction, error)
+	GetAllTransaction(ctx context.Context, userId string, date1 string, date2 string) ([]*models.Transaction, error)
+
 	DeleteIncome(ctx context.Context, id string) error
+
+	// // IncomeAndBill
+	// GetIncomeAndBill(ctx context.Context, id string) ([]*models.IncomeAndBill, error)
 
 	Close() error
 }
@@ -86,13 +92,21 @@ func DeleteBill(ctx context.Context, id string) error {
 }
 
 // Income
-func InsertIncome(ctx context.Context, income *models.Income) error {
-	return implementation.InsertIncome(ctx, income)
+func InsertIncome(ctx context.Context, transaction *models.Transaction) error {
+	return implementation.InsertIncome(ctx, transaction)
+}
+func GetAllTransaction(ctx context.Context, userId string, date1 string, date2 string) ([]*models.Transaction, error) {
+	return implementation.GetAllTransaction(ctx, userId, date1, date2)
 }
 
-func GetIncome(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Income, error) {
+func GetIncome(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Transaction, error) {
 	return implementation.GetIncome(ctx, accountId, date1, date2)
 }
 func DeleteIncome(ctx context.Context, id string) error {
 	return implementation.DeleteIncome(ctx, id)
 }
+
+// // IncomeAndBill
+// func GetIncomeAndBill(ctx context.Context, id string) ([]*models.IncomeAndBill, error) {
+// 	return implementation.GetIncomeAndBill(ctx, id)
+// }

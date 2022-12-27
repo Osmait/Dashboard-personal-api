@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "github.com/lib/pq"
@@ -189,14 +190,15 @@ func (repo *PostgresRepository) DeleteBill(ctx context.Context, id string) error
 
 // Income
 
-func (repo *PostgresRepository) InsertIncome(ctx context.Context, income *models.Income) error {
-	_, err := repo.db.ExecContext(ctx, "INSERT INTO income (id,icome_name,icome_description,amount,account_id) VALUES ($1,$2,$3,$4,$5)", income.Id, income.IncomeName, income.IncomeDescription, income.Amount, income.Account_id)
+func (repo *PostgresRepository) InsertIncome(ctx context.Context, income *models.Transaction) error {
+	fmt.Println(income)
+
+	_, err := repo.db.ExecContext(ctx, "INSERT INTO transactions (id,transaction_name,transaction_description,amount,type_transation,user_id,account_id) VALUES ($1,$2,$3,$4,$5,$6,$7)", income.Id, income.Name, income.Description, income.Amount, income.TypeTransation, income.UserId, income.Account_id)
 	return err
 }
 
-func (repo *PostgresRepository) GetIncome(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Income, error) {
-
-	rows, err := repo.db.QueryContext(ctx, "SELECT id,icome_name,icome_description,amount,account_id,created_at FROM bill WHERE account_id = $1 and created_at BETWEEN $2 and $3 ", accountId, date1, date2)
+func (repo *PostgresRepository) GetAllTransaction(ctx context.Context, userId, date1 string, date2 string) ([]*models.Transaction, error) {
+	rows, err := repo.db.QueryContext(ctx, "SELECT id,transaction_name,transaction_description,amount,type_transation,user_id,account_id,created_at FROM transactions WHERE user_id = $1 and created_at BETWEEN $2 and $3 ", userId, date1, date2)
 	if err != nil {
 		return nil, err
 	}
@@ -207,10 +209,38 @@ func (repo *PostgresRepository) GetIncome(ctx context.Context, accountId string,
 		}
 
 	}()
-	var incomes []*models.Income
+	var incomes []*models.Transaction
 	for rows.Next() {
-		var income = models.Income{}
-		if err = rows.Scan(&income.Id, &income.IncomeName, &income.IncomeDescription, &income.Amount, &income.Account_id, &income.Created_at); err == nil {
+		var income = models.Transaction{}
+		if err = rows.Scan(&income.Id, &income.Name, &income.Description, &income.Amount, &income.TypeTransation, &income.UserId, &income.Account_id, &income.Created_at); err == nil {
+			incomes = append(incomes, &income)
+		}
+
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return incomes, nil
+}
+
+func (repo *PostgresRepository) GetIncome(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Transaction, error) {
+
+	rows, err := repo.db.QueryContext(ctx, "SELECT id,transaction_name,transaction_description,amount,type_transation,account_id,created_at FROM transactions WHERE account_id = $1 and created_at BETWEEN $2 and $3 ", accountId, date1, date2)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		err = rows.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+	}()
+	var incomes []*models.Transaction
+	for rows.Next() {
+		var income = models.Transaction{}
+		if err = rows.Scan(&income.Id, &income.Name, &income.Description, &income.Amount, &income.TypeTransation, &income.Account_id, &income.Created_at); err == nil {
 			incomes = append(incomes, &income)
 		}
 

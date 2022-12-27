@@ -26,9 +26,18 @@ func UserRouters(s server.Server, r *mux.Router) {
 	r.HandleFunc("/account", handlers.GetAccounts(s)).Methods(http.MethodGet)
 	r.HandleFunc("/account/{id}", handlers.DeleteAccount(s)).Methods(http.MethodDelete)
 
-	// Bills
-	r.HandleFunc("/income", handlers.InsertIncome(s)).Methods(http.MethodPost)
-	r.HandleFunc("/income/{id}", handlers.GetIncome(s)).Methods(http.MethodGet)
-	r.HandleFunc("/income/{id}", handlers.DeleteIncome(s)).Methods(http.MethodDelete)
+	// Income
+	r.HandleFunc("/transation", handlers.InsertIncome(s)).Methods(http.MethodPost)
+	r.HandleFunc("/transation/general", handlers.GetAllTransaction(s)).Methods(http.MethodGet)
+	r.HandleFunc("/transation/{id}", handlers.GetIncome(s)).Methods(http.MethodGet)
+	r.HandleFunc("/transation/{id}", handlers.DeleteIncome(s)).Methods(http.MethodDelete)
+
+	// // Bills
+	// r.HandleFunc("/bill", handlers.InsertBill(s)).Methods(http.MethodPost)
+	// r.HandleFunc("/bill/{id}", handlers.GetBills(s)).Methods(http.MethodGet)
+	// r.HandleFunc("/bill/{id}", handlers.DeleteBill(s)).Methods(http.MethodDelete)
+
+	// // IncomeAndBill
+	// r.HandleFunc("/icomeandbill/{id}", handlers.IncomeAndBill(s)).Methods(http.MethodGet)
 
 }
