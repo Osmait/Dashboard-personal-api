@@ -252,7 +252,13 @@ func (repo *PostgresRepository) GetIncome(ctx context.Context, accountId string,
 	return incomes, nil
 }
 
+func (repo *PostgresRepository) UpdateTransaction(ctx context.Context, id string, transaction *models.Transaction) error {
+
+	_, err := repo.db.ExecContext(ctx, "UPDATE  transactions  SET transaction_name=$1,transaction_description=$2,amount=$3,type_transation=$4,account_id=$5 WHERE id =$6 and user_id = $7", transaction.Name, transaction.Description, transaction.Amount, transaction.TypeTransation, transaction.Account_id, id, transaction.UserId)
+	return err
+}
+
 func (repo *PostgresRepository) DeleteIncome(ctx context.Context, id string) error {
-	_, err := repo.db.ExecContext(ctx, "DELETE FROM icome WHERE id = $1 ", id)
+	_, err := repo.db.ExecContext(ctx, "DELETE FROM transactions WHERE id = $1 ", id)
 	return err
 }

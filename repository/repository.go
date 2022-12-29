@@ -28,11 +28,9 @@ type Repository interface {
 
 	GetIncome(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Transaction, error)
 	GetAllTransaction(ctx context.Context, userId string, date1 string, date2 string) ([]*models.Transaction, error)
+	UpdateTransaction(ctx context.Context, id string, transaction *models.Transaction) error
 
 	DeleteIncome(ctx context.Context, id string) error
-
-	// // IncomeAndBill
-	// GetIncomeAndBill(ctx context.Context, id string) ([]*models.IncomeAndBill, error)
 
 	Close() error
 }
@@ -102,6 +100,11 @@ func GetAllTransaction(ctx context.Context, userId string, date1 string, date2 s
 func GetIncome(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Transaction, error) {
 	return implementation.GetIncome(ctx, accountId, date1, date2)
 }
+
+func UpdateTransaction(ctx context.Context, id string, transaction *models.Transaction) error {
+	return implementation.UpdateTransaction(ctx, id, transaction)
+}
+
 func DeleteIncome(ctx context.Context, id string) error {
 	return implementation.DeleteIncome(ctx, id)
 }
