@@ -30,7 +30,7 @@ func InsertIncome(s server.Server) http.HandlerFunc {
 		}
 		var income = models.Transaction{}
 		err = json.NewDecoder(r.Body).Decode(&income)
-		fmt.Println(income)
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -127,7 +127,7 @@ func UpdateTransaction(s server.Server) http.HandlerFunc {
 		}
 		var transaction = models.Transaction{}
 		err = json.NewDecoder(r.Body).Decode(&transaction)
-		fmt.Println(transaction)
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return

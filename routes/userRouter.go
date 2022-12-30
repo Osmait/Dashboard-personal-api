@@ -34,12 +34,4 @@ func UserRouters(s server.Server, r *mux.Router) {
 
 	r.HandleFunc("/transation/{id}", handlers.DeleteIncome(s)).Methods(http.MethodDelete)
 
-	// // Bills
-	// r.HandleFunc("/bill", handlers.InsertBill(s)).Methods(http.MethodPost)
-	// r.HandleFunc("/bill/{id}", handlers.GetBills(s)).Methods(http.MethodGet)
-	// r.HandleFunc("/bill/{id}", handlers.DeleteBill(s)).Methods(http.MethodDelete)
-
-	// // IncomeAndBill
-	// r.HandleFunc("/icomeandbill/{id}", handlers.IncomeAndBill(s)).Methods(http.MethodGet)
-
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/osmait/admin-finanzas/helpers"
 	"github.com/osmait/admin-finanzas/models"
@@ -24,6 +25,14 @@ func SignUpHandler(s server.Server) http.HandlerFunc {
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
+		validate := validator.New()
+		err := validate.Struct(user)
+		if err != nil {
+
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), HASH_COST)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

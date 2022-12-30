@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 
 	_ "github.com/lib/pq"
@@ -148,50 +147,9 @@ func (repo *PostgresRepository) DeleteAccount(ctx context.Context, id string, us
 	return err
 }
 
-// Bills
-
-func (repo *PostgresRepository) InsertBill(ctx context.Context, bill *models.Bill) error {
-	_, err := repo.db.ExecContext(ctx, "INSERT INTO bill (id,bill_name,bill_description,amount,account_id) VALUES ($1,$2,$3,$4,$5)", bill.Id, bill.BillName, bill.BillDescription, bill.Amount, bill.Account_id)
-	return err
-}
-
-func (repo *PostgresRepository) GetBills(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Bill, error) {
-
-	rows, err := repo.db.QueryContext(ctx, "SELECT id,bill_name,bill_description,amount,account_id,created_at FROM bill WHERE account_id = $1 and created_at BETWEEN $2 and $3 ", accountId, date1, date2)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		err = rows.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-	}()
-	var bills []*models.Bill
-	for rows.Next() {
-		var bill = models.Bill{}
-		if err = rows.Scan(&bill.Id, &bill.BillName, &bill.BillDescription, &bill.Amount, &bill.Account_id, &bill.Created_at); err == nil {
-			bills = append(bills, &bill)
-		}
-
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	return bills, nil
-}
-
-func (repo *PostgresRepository) DeleteBill(ctx context.Context, id string) error {
-	_, err := repo.db.ExecContext(ctx, "DELETE FROM bill WHERE id = $1 ", id)
-	return err
-}
-
 // Income
 
 func (repo *PostgresRepository) InsertIncome(ctx context.Context, income *models.Transaction) error {
-	fmt.Println(income)
 
 	_, err := repo.db.ExecContext(ctx, "INSERT INTO transactions (id,transaction_name,transaction_description,amount,type_transation,user_id,account_id) VALUES ($1,$2,$3,$4,$5,$6,$7)", income.Id, income.Name, income.Description, income.Amount, income.TypeTransation, income.UserId, income.Account_id)
 	return err
