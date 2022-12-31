@@ -33,5 +33,7 @@ func UserRouters(s server.Server, r *mux.Router) {
 	r.HandleFunc("/transation/{id}", handlers.UpdateTransaction(s)).Methods(http.MethodPut)
 
 	r.HandleFunc("/transation/{id}", handlers.DeleteIncome(s)).Methods(http.MethodDelete)
+	// Balances
+	r.HandleFunc("/balance", handlers.GetBalace(s)).Methods(http.MethodGet)
 
 }

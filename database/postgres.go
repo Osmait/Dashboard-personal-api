@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "github.com/lib/pq"
@@ -152,6 +153,11 @@ func (repo *PostgresRepository) DeleteAccount(ctx context.Context, id string, us
 func (repo *PostgresRepository) InsertIncome(ctx context.Context, income *models.Transaction) error {
 
 	_, err := repo.db.ExecContext(ctx, "INSERT INTO transactions (id,transaction_name,transaction_description,amount,type_transation,user_id,account_id) VALUES ($1,$2,$3,$4,$5,$6,$7)", income.Id, income.Name, income.Description, income.Amount, income.TypeTransation, income.UserId, income.Account_id)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// _, err = repo.db.ExecContext(ctx, "UPDATE  account SET balance =(SELECT  balance from account where id =$1)+$2 WHERE id= $1", income.Account_id, income.Amount)
 	return err
 }
 
@@ -213,10 +219,40 @@ func (repo *PostgresRepository) GetIncome(ctx context.Context, accountId string,
 func (repo *PostgresRepository) UpdateTransaction(ctx context.Context, id string, transaction *models.Transaction) error {
 
 	_, err := repo.db.ExecContext(ctx, "UPDATE  transactions  SET transaction_name=$1,transaction_description=$2,amount=$3,type_transation=$4,account_id=$5 WHERE id =$6 and user_id = $7", transaction.Name, transaction.Description, transaction.Amount, transaction.TypeTransation, transaction.Account_id, id, transaction.UserId)
+
 	return err
 }
 
 func (repo *PostgresRepository) DeleteIncome(ctx context.Context, id string) error {
 	_, err := repo.db.ExecContext(ctx, "DELETE FROM transactions WHERE id = $1 ", id)
+
 	return err
+}
+func (repo *PostgresRepository) GetBalace(ctx context.Context, id string) ([]*models.Balace, error) {
+
+	rows, err := repo.db.QueryContext(ctx, "SELECT account.id ,balance + sum(amount)  as TOTAL  FROM account   JOIN transactions   on account.id  = transactions.account_id  WHERE account.user_id =$1 GROUP BY account.id", id)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		err = rows.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+	var totals []*models.Balace
+	for rows.Next() {
+		var total = models.Balace{}
+		if err = rows.Scan(&total.Id, &total.Total); err == nil {
+			totals = append(totals, &total)
+
+		}
+	}
+	if err = rows.Err(); err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return totals, nil
+
 }

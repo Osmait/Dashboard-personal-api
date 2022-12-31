@@ -159,3 +159,29 @@ func DeleteIncome(s server.Server) http.HandlerFunc {
 		})
 	}
 }
+
+func GetBalace(s server.Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token, err := helpers.DecodeJwt(w, r, s)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+		claims, ok := token.Claims.(*models.AppClaims)
+
+		if !ok || !token.Valid {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+
+		}
+		total, err := repository.GetBalance(r.Context(), claims.UserId)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(total)
+
+	}
+}

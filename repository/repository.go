@@ -26,7 +26,7 @@ type Repository interface {
 	GetIncome(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Transaction, error)
 	GetAllTransaction(ctx context.Context, userId string, date1 string, date2 string) ([]*models.Transaction, error)
 	UpdateTransaction(ctx context.Context, id string, transaction *models.Transaction) error
-
+	GetBalace(ctx context.Context, id string) ([]*models.Balace, error)
 	DeleteIncome(ctx context.Context, id string) error
 
 	Close() error
@@ -92,4 +92,8 @@ func UpdateTransaction(ctx context.Context, id string, transaction *models.Trans
 
 func DeleteIncome(ctx context.Context, id string) error {
 	return implementation.DeleteIncome(ctx, id)
+}
+
+func GetBalance(ctx context.Context, id string) ([]*models.Balace, error) {
+	return implementation.GetBalace(ctx, id)
 }
