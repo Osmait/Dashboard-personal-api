@@ -18,16 +18,15 @@ type Repository interface {
 	InsertAccount(ctx context.Context, account *models.Account) error
 	GetAcoounts(ctx context.Context, userId string) ([]*models.Account, error)
 	DeleteAccount(ctx context.Context, id string, userId string) error
-	// Bills
 
-	// Income
-	InsertIncome(ctx context.Context, transaction *models.Transaction) error
+	// Transactions
+	InsertTransaction(ctx context.Context, transaction *models.Transaction) error
 
-	GetIncome(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Transaction, error)
+	GetTransaction(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Transaction, error)
 	GetAllTransaction(ctx context.Context, userId string, date1 string, date2 string) ([]*models.Transaction, error)
 	UpdateTransaction(ctx context.Context, id string, transaction *models.Transaction) error
 	GetBalace(ctx context.Context, id string) ([]*models.Balace, error)
-	DeleteIncome(ctx context.Context, id string) error
+	DeleteTransaction(ctx context.Context, id string) error
 
 	Close() error
 }
@@ -75,23 +74,23 @@ func DeleteAccount(ctx context.Context, id string, userId string) error {
 }
 
 // Income
-func InsertIncome(ctx context.Context, transaction *models.Transaction) error {
-	return implementation.InsertIncome(ctx, transaction)
+func InsertTransaction(ctx context.Context, transaction *models.Transaction) error {
+	return implementation.InsertTransaction(ctx, transaction)
 }
 func GetAllTransaction(ctx context.Context, userId string, date1 string, date2 string) ([]*models.Transaction, error) {
 	return implementation.GetAllTransaction(ctx, userId, date1, date2)
 }
 
-func GetIncome(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Transaction, error) {
-	return implementation.GetIncome(ctx, accountId, date1, date2)
+func GetTransaction(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Transaction, error) {
+	return implementation.GetTransaction(ctx, accountId, date1, date2)
 }
 
 func UpdateTransaction(ctx context.Context, id string, transaction *models.Transaction) error {
 	return implementation.UpdateTransaction(ctx, id, transaction)
 }
 
-func DeleteIncome(ctx context.Context, id string) error {
-	return implementation.DeleteIncome(ctx, id)
+func DeleteTransaction(ctx context.Context, id string) error {
+	return implementation.DeleteTransaction(ctx, id)
 }
 
 func GetBalance(ctx context.Context, id string) ([]*models.Balace, error) {

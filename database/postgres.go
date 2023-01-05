@@ -148,9 +148,9 @@ func (repo *PostgresRepository) DeleteAccount(ctx context.Context, id string, us
 	return err
 }
 
-// Income
+// Transactions
 
-func (repo *PostgresRepository) InsertIncome(ctx context.Context, income *models.Transaction) error {
+func (repo *PostgresRepository) InsertTransaction(ctx context.Context, income *models.Transaction) error {
 
 	_, err := repo.db.ExecContext(ctx, "INSERT INTO transactions (id,transaction_name,transaction_description,amount,type_transation,user_id,account_id) VALUES ($1,$2,$3,$4,$5,$6,$7)", income.Id, income.Name, income.Description, income.Amount, income.TypeTransation, income.UserId, income.Account_id)
 	// if err != nil {
@@ -188,7 +188,7 @@ func (repo *PostgresRepository) GetAllTransaction(ctx context.Context, userId, d
 	return incomes, nil
 }
 
-func (repo *PostgresRepository) GetIncome(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Transaction, error) {
+func (repo *PostgresRepository) GetTransaction(ctx context.Context, accountId string, date1 string, date2 string) ([]*models.Transaction, error) {
 
 	rows, err := repo.db.QueryContext(ctx, "SELECT id,transaction_name,transaction_description,amount,type_transation,account_id,created_at FROM transactions WHERE account_id = $1 and created_at BETWEEN $2 and $3 ", accountId, date1, date2)
 	if err != nil {
@@ -223,7 +223,7 @@ func (repo *PostgresRepository) UpdateTransaction(ctx context.Context, id string
 	return err
 }
 
-func (repo *PostgresRepository) DeleteIncome(ctx context.Context, id string) error {
+func (repo *PostgresRepository) DeleteTransaction(ctx context.Context, id string) error {
 	_, err := repo.db.ExecContext(ctx, "DELETE FROM transactions WHERE id = $1 ", id)
 
 	return err

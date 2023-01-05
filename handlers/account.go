@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/osmait/admin-finanzas/helpers"
 	"github.com/osmait/admin-finanzas/models"
@@ -30,6 +31,14 @@ func InsertAccount(s server.Server) http.HandlerFunc {
 		var account = models.Account{}
 		err = json.NewDecoder(r.Body).Decode(&account)
 		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		validate := validator.New()
+		err = validate.Struct(account)
+		if err != nil {
+
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

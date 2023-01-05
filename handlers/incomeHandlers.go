@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/osmait/admin-finanzas/helpers"
 	"github.com/osmait/admin-finanzas/models"
@@ -14,7 +15,7 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-func InsertIncome(s server.Server) http.HandlerFunc {
+func InsertTransaction(s server.Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token, err := helpers.DecodeJwt(w, r, s)
 		if err != nil {
@@ -28,32 +29,40 @@ func InsertIncome(s server.Server) http.HandlerFunc {
 			return
 
 		}
-		var income = models.Transaction{}
-		err = json.NewDecoder(r.Body).Decode(&income)
+		var transaction = models.Transaction{}
+		err = json.NewDecoder(r.Body).Decode(&transaction)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		validate := validator.New()
+		err = validate.Struct(transaction)
+		if err != nil {
+
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		id, err := ksuid.NewRandom()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		income.Id = id.String()
-		income.UserId = claims.UserId
+		transaction.Id = id.String()
+		transaction.UserId = claims.UserId
 
-		err = repository.InsertIncome(r.Context(), &income)
+		err = repository.InsertTransaction(r.Context(), &transaction)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(income)
+		json.NewEncoder(w).Encode(transaction)
 
 	}
 }
-func GetIncome(s server.Server) http.HandlerFunc {
+func GetTransaction(s server.Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
 		date1 := r.URL.Query().Get("date1")
@@ -65,13 +74,13 @@ func GetIncome(s server.Server) http.HandlerFunc {
 			date2 = fmt.Sprintf("%d/%d/%d", currenTime.Year(), currenTime.Month(), currenTime.Day()+1)
 		}
 
-		income, err := repository.GetIncome(r.Context(), params["id"], date1, date2)
+		transaction, err := repository.GetTransaction(r.Context(), params["id"], date1, date2)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(income)
+		json.NewEncoder(w).Encode(transaction)
 	}
 }
 
@@ -100,13 +109,13 @@ func GetAllTransaction(s server.Server) http.HandlerFunc {
 			date2 = fmt.Sprintf("%d/%d/%d", currenTime.Year(), currenTime.Month(), currenTime.Day()+1)
 		}
 
-		income, err := repository.GetAllTransaction(r.Context(), claims.UserId, date1, date2)
+		transaction, err := repository.GetAllTransaction(r.Context(), claims.UserId, date1, date2)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(income)
+		json.NewEncoder(w).Encode(transaction)
 	}
 }
 
@@ -145,11 +154,11 @@ func UpdateTransaction(s server.Server) http.HandlerFunc {
 	}
 }
 
-func DeleteIncome(s server.Server) http.HandlerFunc {
+func DeleteTransaction(s server.Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
 
-		err := repository.DeleteIncome(r.Context(), params["id"])
+		err := repository.DeleteTransaction(r.Context(), params["id"])
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
