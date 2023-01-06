@@ -1,6 +1,6 @@
 FROM postgres:10.3
 
-VOLUME [ "./postgres_data:/var/lib/postgresql/data" ]
+
 
 
 

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -25,6 +26,7 @@ func SignUpHandler(s server.Server) http.HandlerFunc {
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
+		fmt.Println(user)
 		validate := validator.New()
 		err := validate.Struct(user)
 		if err != nil {
