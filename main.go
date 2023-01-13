@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -15,7 +16,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	PORT := os.Getenv("PORT")
+	PORT := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	JWT_SECRET := os.Getenv("JWT_SECRET")
 	DATABASE_URL := os.Getenv("DATABASE_URL")
 
