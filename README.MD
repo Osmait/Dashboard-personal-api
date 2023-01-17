@@ -7,7 +7,7 @@ This is a project to try my skills in Golang
 go tidy
 ```
 
-## 2- After  create in de root of project file **.env** set the environment variables
+## 2- After  create in the root of project file **.env** set the environment variables
 ```sh
 PORT=:3000
 JWT_SECRET=example
